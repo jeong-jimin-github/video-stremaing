@@ -83,7 +83,7 @@
             const query = document.getElementById('searchBar').value;
             const isComplete = true; // 검색이 완료되었음을 나타냅니다.
 
-            const response = await fetch(`http://115.138.164.135:5000/search?q=${encodeURIComponent(query)}&is_complete=${isComplete}`);
+            const response = await fetch(`http://localhost:5000/search?q=${encodeURIComponent(query)}&is_complete=${isComplete}`);
             const videos = await response.json();
 
             const resultsDiv = document.getElementById('videos');
@@ -95,7 +95,7 @@
                     videoElement.innerHTML = `
                         <a href="/play?video=${encodeURIComponent(video)}">
                             <div>
-                                <img src="http://115.138.164.135:5000/thumbnails/${video}" loading="lazy" alt="thumbnail">
+                                <img src="http://localhost:5000/thumbnails/${video}" loading="lazy" alt="thumbnail">
                                 <h2>${video}</h2>
                             </div>
                         </a>
@@ -108,7 +108,7 @@
         }
 
         async function searchHistory() {
-            const response = await fetch('http://115.138.164.135:5000/search/history');
+            const response = await fetch('http://localhost:5000/search/history');
             const history = await response.json();
 
             const historyDiv = document.getElementById('searchHistory');
@@ -150,8 +150,8 @@
                 }
             });
 
-            fetchVideos('http://115.138.164.135:5000/videos/popular', 'popular-videos');
-            fetchVideos('http://115.138.164.135:5000/videos', 'videos');
+            fetchVideos('http://localhost:5000/videos/popular', 'popular-videos');
+            fetchVideos('http://localhost:5000/videos', 'videos');
         });
 
         function fetchVideos(url, elementId) {
@@ -163,7 +163,7 @@
                         html += `
                         <a href="/play?video=${encodeURIComponent(video)}">
                             <div>
-                                <img src="http://115.138.164.135:5000/thumbnails/${video}" loading="lazy" alt="thumbnail">
+                                <img src="http://localhost:5000/thumbnails/${video}" loading="lazy" alt="thumbnail">
                                 <h2>${video}</h2>
                             </div>
                         </a>
