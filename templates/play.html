@@ -30,17 +30,17 @@
             const video = urlParams.get('video');
 
             if (video) {
-                const response = await fetch(`http://115.138.164.135:5000/video-info?video=${encodeURIComponent(video)}`);
+                const response = await fetch(`http://localhost:5000/video-info?video=${encodeURIComponent(video)}`);
                 const videoInfo = await response.json();
 
                 document.getElementById('video-title').innerText = videoInfo.title;
                 document.getElementById('video-views').innerText = videoInfo.views;
                 const videoPlayer = document.getElementById('video-player');
-                videoPlayer.src = `http://115.138.164.135:5000/videos/${encodeURIComponent(video)}`;
+                videoPlayer.src = `http://localhost:5000/videos/${encodeURIComponent(video)}`;
                 videoPlayer.type = 'video/mp4'; // or 'video/ts' if .ts files
 
                 videoPlayer.addEventListener('play', () => {
-                    fetch(`http://115.138.164.135:5000/increment-views?video=${encodeURIComponent(video)}`, {
+                    fetch(`http://localhost:5000/increment-views?video=${encodeURIComponent(video)}`, {
                         method: 'POST'
                     });
                 });
