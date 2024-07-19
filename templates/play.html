@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비디오 재생</title>
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+    <style>
+        body {
+            padding: 1rem;
+        }
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="video-title"></h1>
+    <video id="video-player" controls></video>
+    <p>조회수: <span id="video-views"></span></p>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const video = urlParams.get('video');
+
+            if (video) {
+                const response = await fetch(`http://115.138.164.135:5000/video-info?video=${encodeURIComponent(video)}`);
+                const videoInfo = await response.json();
+
+                document.getElementById('video-title').innerText = videoInfo.title;
+                document.getElementById('video-views').innerText = videoInfo.views;
+                const videoPlayer = document.getElementById('video-player');
+                videoPlayer.src = `http://115.138.164.135:5000/videos/${encodeURIComponent(video)}`;
+                videoPlayer.type = 'video/mp4'; // or 'video/ts' if .ts files
+
+                videoPlayer.addEventListener('play', () => {
+                    fetch(`http://115.138.164.135:5000/increment-views?video=${encodeURIComponent(video)}`, {
+                        method: 'POST'
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

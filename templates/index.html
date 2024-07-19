@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>동영상 스트리밍</title>
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+    <style>
+        body {
+            padding: 1rem;
+        }
+        #searchBar {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        #searchHistory {
+            display: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        #searchHistory div {
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+        #searchHistory div:hover {
+            background-color: #eee;
+        }
+        #popular-videos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        #videos {
+            display: block;
+        }
+        #popular-videos a {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            flex: 1 0 calc(20% - 1rem); /* 기본적으로 5개 가로로 배치 */
+            max-width: calc(20% - 1rem);
+        }
+        #videos a {
+            display: block;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-decoration: none;
+        }
+        #popular-videos img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 9 / 16; /* 9:16 비율 유지 */
+            border-radius: 8px;
+            object-fit: cover; /* 이미지가 컨테이너를 채우도록 자르기 */
+            object-position: center; /* 이미지의 가운데 부분을 표시 */
+        }
+        #videos img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9; /* 16:9 비율 유지 */
+            border-radius: 8px;
+            object-fit: cover; /* 이미지가 컨테이너를 채우도록 자르기 */
+            object-position: center; /* 이미지의 가운데 부분을 표시 */
+        }
+        #popular-videos h2, #videos h2 {
+            font-size: 1rem;
+            margin: 0.5rem 0 0;
+            color: var(--pico-color-primary);
+            white-space: nowrap; /* 한 줄로 제한 */
+            overflow: hidden; /* 넘치는 텍스트 숨기기 */
+            text-overflow: ellipsis; /* ...으로 표시 */
+        }
+    </style>
+    <script>
+        async function searchVideos() {
+            const query = document.getElementById('searchBar').value;
+            const isComplete = true; // 검색이 완료되었음을 나타냅니다.
+
+            const response = await fetch(`http://115.138.164.135:5000/search?q=${encodeURIComponent(query)}&is_complete=${isComplete}`);
+            const videos = await response.json();
+
+            const resultsDiv = document.getElementById('videos');
+            resultsDiv.innerHTML = '';
+            if (videos.length > 0) {
+                videos.forEach(video => {
+                    const videoElement = document.createElement('div');
+                    videoElement.className = 'video-item';
+                    videoElement.innerHTML = `
+                        <a href="/play?video=${encodeURIComponent(video)}">
+                            <div>
+                                <img src="http://115.138.164.135:5000/thumbnails/${video}" loading="lazy" alt="thumbnail">
+                                <h2>${video}</h2>
+                            </div>
+                        </a>
+                    `;
+                    resultsDiv.appendChild(videoElement);
+                });
+            } else {
+                resultsDiv.innerText = 'No videos found';
+            }
+        }
+
+        async function searchHistory() {
+            const response = await fetch('http://115.138.164.135:5000/search/history');
+            const history = await response.json();
+
+            const historyDiv = document.getElementById('searchHistory');
+            historyDiv.innerHTML = '';
+            if (history.length > 0) {
+                history.forEach(query => {
+                    const queryElement = document.createElement('div');
+                    queryElement.className = 'history-item';
+                    queryElement.innerText = query;
+                    historyDiv.appendChild(queryElement);
+                });
+            } else {
+                historyDiv.innerText = 'No search history';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('searchBar').addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    searchVideos();
+                }
+            });
+
+            document.getElementById('searchBar').addEventListener('focus', () => {
+                searchHistory();
+                document.getElementById('searchHistory').style.display = 'block';
+            });
+
+            document.getElementById('searchHistory').addEventListener('click', (event) => {
+                if (event.target.tagName === 'DIV') {
+                    document.getElementById('searchBar').value = event.target.textContent;
+                    searchVideos();
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                if (event.target.id !== 'searchBar' && event.target.id !== 'searchHistory') {
+                    document.getElementById('searchHistory').style.display = 'none';
+                }
+            });
+
+            fetchVideos('http://115.138.164.135:5000/videos/popular', 'popular-videos');
+            fetchVideos('http://115.138.164.135:5000/videos', 'videos');
+        });
+
+        function fetchVideos(url, elementId) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    let html = "";
+                    data.forEach(video => {
+                        html += `
+                        <a href="/play?video=${encodeURIComponent(video)}">
+                            <div>
+                                <img src="http://115.138.164.135:5000/thumbnails/${video}" loading="lazy" alt="thumbnail">
+                                <h2>${video}</h2>
+                            </div>
+                        </a>
+                        `;
+                    });
+                    document.getElementById(elementId).innerHTML = html;
+                });
+        }
+    </script>
+</head>
+<body>
+    <input type="text" id="searchBar" placeholder="검색...">
+    <div id="searchHistory"></div><br>
+    <h1>가장 많이 시청함</h1>
+    <div id="popular-videos"></div>
+    <h1>전체 비디오</h1>
+    <div id="videos"></div>
+</body>
+</html>
